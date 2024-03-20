@@ -230,7 +230,7 @@ func main() {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 
-	SendIt(c, "ws-chat", "Hello, World!")
+	SendIt(c, "ping", "Hello, World!")
 
 	Count := 1
 
