@@ -232,23 +232,27 @@ func main() {
 
 	SendIt(c, "ws-chat", "Hello, World!")
 
+	Count := 1
+
 	for {
 		select {
 		case <-done:
 			return
-		case t := <-ticker.C:
-			err := SendIt(c, "ws-chat", t.String())
-			if err != nil {
-				log.Println("write:", err)
-			 	return
+		case t := <-ticker.C:			
+			if (Count <= 3) {
+				err := SendIt(c, "ws-chat", t.String())
+				if err != nil {
+					log.Println("write:", err)
+					return
+				}
 			}
+			Count++
 
 			// err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
 			// if err != nil {
 			//	log.Println("write:", err)
 			// 	return
 			// }
-
 		case <-interrupt:
 			log.Println("interrupt")
 
