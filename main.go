@@ -181,6 +181,8 @@ type EventData struct {
     Data string	 	`json:"data"`
 }
 
+type fnRecv func(error, []byte) bool
+
 var addr = flag.String("addr", "localhost:3031", "http service address")
 
 func SendIt(c *websocket.Conn, eventName string, sendData string) error {	
@@ -194,6 +196,28 @@ func SendIt(c *websocket.Conn, eventName string, sendData string) error {
 
 func SendClose(c *websocket.Conn) error {
 	return c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+}
+
+func OnRecv(c *websocket.Conn, fn fnRecv) (error, chan struct{}) {
+	done := make(chan struct{})
+
+	go func() {
+		defer close(done)
+
+		for {
+			_, message, err := c.ReadMessage()
+			if err != nil {
+				// log.Println("read:", err)
+				fn(err, nil)
+				return
+			}
+
+			fn(err, message)
+			// log.Printf("msgType: %d, recv: %s", messageType, message)
+		}
+	}()
+
+	return nil, done
 }
 
 func main() {
@@ -212,23 +236,37 @@ func main() {
 	}
 	defer c.Close()
 
-	done := make(chan struct{})
+	// done := make(chan struct{})
 
-	go func() {
-		defer close(done)
-		for {
-			messageType, message, err := c.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				return
-			}
+	// go func() {
+	// 	defer close(done)
+	// 	for {
+	// 		messageType, message, err := c.ReadMessage()
+	// 		if err != nil {
+	// 			log.Println("read:", err)
+	// 			return
+	// 		}
 
-			log.Printf("msgType: %d, recv: %s", messageType, message)
-		}
-	}()
+	// 		log.Printf("msgType: %d, recv: %s", messageType, message)
+	// 	}
+	// }()
+	
+	// _ = OnRecv(c, func(err error, message []byte) bool { log.Printf("recv: %s", message); return true });
+	
+	err, done := OnRecv(c, func(err error, message []byte) bool { 
+		log.Printf("recv: %s", message); 
+		return true 
+	});
+
+	if (err != nil) {
+		log.Fatal("OnRecv:", err)
+	}
 
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
+
+	// c.OnMessage(func(msg string) {
+	// });
 
 	SendIt(c, "ping", "Hello, World!")
 
@@ -237,6 +275,7 @@ func main() {
 	for {
 		select {
 		case <-done:
+			log.Printf("server shutdown"); 
 			return
 		case t := <-ticker.C:			
 			if (Count <= 3) {
