@@ -17,7 +17,6 @@
 
   <script type="text/javascript">
     var wSocket;
-
     function init() {
       wSocket = new WebSocket("ws://localhost:3031");
       wSocket.onopen = function (e) {
@@ -33,50 +32,39 @@
         onError(e);
       };
     }
-
     function onOpen(e) {
       alert("WebSocket opened!");
-
       $("#btn_open").attr("disabled", "disabled");
       $("#btn_close").removeAttr("disabled");
       $("#btn_send").removeAttr("disabled");
       $("#message").removeAttr("disabled");
     }
-
     function onClose(e) {
       alert("WebSocket closed!");
-
       $("#btn_open").removeAttr("disabled");
       $("#btn_close").attr("disabled", "disabled");
       $("#btn_send").attr("disabled", "disabled");
       $("#message").attr("disabled", "disabled");
     }
-
     function onMessage(e) {
       alert("메시지 수신 : " + e.data);
     }
-
     function onError(e) {
       alert("오류발생 : " + e.data);
     }
-
     function doOpen() {
       init();
     }
-
     function doClose() {
       wSocket.close();
     }
-
-    function doSend() {        
-      let sendData = {"event":"ws-chat", "data": $("#message").val()};
-      
+    function doSend() {
+      let sendData = { event: "ws-chat", data: $("#message").val() };
       // const makeData = JSON.parse(`{"event":"ws-chat", "data": ${msg}}`);
-      const makeData = JSON.stringify(sendData)
+      const makeData = JSON.stringify(sendData);
       console.log(makeData);
       wSocket.send(makeData);
     }
-
     $(function () {
       $("#btn_open").removeAttr("disabled");
       $("#btn_close").attr("disabled", "disabled");
@@ -84,5 +72,5 @@
       $("#message").attr("disabled", "disabled");
       init();
     });
-</script>
+  </script>
 </html>
