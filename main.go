@@ -167,6 +167,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -277,13 +278,18 @@ func main() {
 		case <-done:
 			log.Printf("server shutdown"); 
 			return
-		case t := <-ticker.C:			
-			if (Count <= 3) {
-				err := SendIt(c, "ws-chat", t.String())
+		//case t := <-ticker.C:			
+		case <-ticker.C:
+			if (Count <= 10) {
+				// Count 문자열로
+
+				err := SendIt(c, "ws-chat", fmt.Sprintf("Messsage[%d]", Count)) // t.String())
 				if err != nil {
 					log.Println("write:", err)
 					return
 				}
+
+				// log.Println("===", t)
 			}
 			Count++
 
